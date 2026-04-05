@@ -6,67 +6,137 @@
     <title>Cuentas Hogar - Proyecto Dekai</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .card-gasto { border-radius: 15px; background: white; margin-bottom: 12px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; position: relative; }
-        .badge-pagado { background: #e6f9ed; color: #2ecc71; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #2ecc71; min-width: 85px; text-align: center; }
-        .badge-pendiente { background: #fff3e6; color: #e67e22; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #e67e22; min-width: 85px; text-align: center; }
-        .syncing { border-color: #3498db; background-color: #f0f7ff; opacity: 0.7; }
+        /* --- MODO OSCURO PERMANENTE --- */
+        body { background-color: #0f172a; color: #f1f5f9; overflow-x: hidden; font-family: sans-serif; }
         
-        details summary { list-style: none; outline: none; cursor: pointer; }
-        details summary::-webkit-details-marker { display: none; }
-        .icon-caret {
-            width: 0; height: 0;
-            border-left: 5px solid transparent; border-right: 5px solid transparent;
-            border-top: 6px solid #94a3b8; transition: transform 0.2s;
+        .card-gasto { 
+            background-color: #1e293b; 
+            border: 1px solid #334155; 
+            border-radius: 18px; 
+            margin-bottom: 12px; 
+            padding: 16px; 
+            position: relative; 
         }
+
+        .icon-box {
+            width: 42px; height: 42px; min-width: 42px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; font-weight: bold; font-size: 18px;
+            background-color: rgba(30, 58, 138, 0.4); color: #60a5fa;
+        }
+
+        /* --- BOTONES CON ALTO CONTRASTE --- */
+        .badge-pendiente { 
+            background: #fb923c; 
+            color: #000; 
+            padding: 10px 16px; 
+            border-radius: 10px; 
+            font-size: 12px; 
+            font-weight: 900; 
+            cursor: pointer; 
+            border: none;
+            transition: transform 0.1s;
+        }
+        .badge-pendiente:active { transform: scale(0.95); }
+
+        .btn-add {
+            width: 100%; margin-top: 8px; padding: 16px;
+            border: 1px solid #334155; border-radius: 16px;
+            color: #60a5fa; font-size: 12px; font-weight: bold;
+            background: #1e293b; text-transform: uppercase;
+        }
+
+        .btn-delete { 
+            color: #f87171; 
+            opacity: 0.6; 
+            font-size: 22px; 
+            padding: 4px; 
+            transition: opacity 0.2s;
+        }
+        .btn-delete:hover { opacity: 1; }
+
+        /* --- ACORDEONES (CERRADOS POR DEFECTO) --- */
+        summary { 
+            background-color: #334155; 
+            border: 1px solid #475569; 
+            padding: 16px; border-radius: 16px;
+            list-style: none; outline: none; cursor: pointer;
+        }
+        
+        .badge-total-mes {
+            font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 8px;
+            background: #064e3b; color: #34d399; border: 1px solid #065f46;
+        }
+
+        .icon-caret { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #94a3b8; transition: transform 0.2s; }
         details[open] .icon-caret { transform: rotate(180deg); }
-        .last-check { font-size: 10px; color: #94a3b8; margin-top: 4px; }
+
+        /* --- INPUTS --- */
+        input { 
+            background-color: #334155 !important; 
+            border: 1px solid #475569 !important; 
+            color: white !important;
+            border-radius: 12px;
+            outline: none;
+        }
+
+        /* --- CARGA --- */
+        .loading-overlay {
+            position: absolute; inset: 0; background: rgba(15, 23, 42, 0.9);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 15px; z-index: 20; backdrop-filter: blur(2px);
+        }
+        .spinner {
+            width: 24px; height: 24px;
+            border: 3px solid #334155; border-top: 3px solid #fb923c;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #modalBasico, #modalConfirm { display: none; }
-        .btn-delete { color: #ef4444; padding: 8px; opacity: 0.4; transition: 0.2s; }
-        .btn-delete:hover { opacity: 1; }
     </style>
 </head>
-<body class="bg-slate-50 p-4 font-sans pb-24">
+<body class="p-4 pb-24">
 
     <div class="mb-8">
-        <details open>
-            <summary class="flex justify-between items-center bg-blue-600 p-4 rounded-2xl shadow-lg">
-                <span class="text-white font-bold tracking-wide">GASTOS BÁSICOS</span>
-                <div class="icon-caret border-t-white"></div>
+        <details>
+            <summary class="flex justify-between items-center shadow-lg">
+                <span class="text-white font-bold tracking-wide uppercase text-sm">Gastos Básicos</span>
+                <div class="icon-caret"></div>
             </summary>
             <div id="plantillaBasicos" class="mt-4"></div>
-            <button onclick="abrirModalBasico()" class="w-full mt-2 p-3 border-2 border-dashed border-blue-200 rounded-xl text-blue-400 text-sm font-bold">
-                + Añadir nuevo servicio a básicos
+            <button onclick="abrirModalBasico()" class="btn-add">
+                + Añadir nuevo servicio
             </button>
         </details>
     </div>
 
-    <hr class="border-slate-200 mb-8">
+    <hr class="border-slate-800 mb-8">
 
     <div class="flex justify-between items-center mb-4 px-1">
-        <h3 class="font-bold text-slate-700 text-lg">Historial Mensual</h3>
-        <button onclick="cargarDesdeNube()" id="btnSync" class="text-blue-500 text-xs font-medium">Sincronizar ↻</button>
+        <h3 class="font-bold text-slate-300 text-lg">Historial Mensual</h3>
+        <button onclick="cargarDesdeNube()" id="btnSync" class="text-blue-400 text-xs font-bold bg-slate-800 px-3 py-1 rounded-full border border-slate-700">Sincronizar ↻</button>
     </div>
     <div id="listaHistorial"></div>
 
-    <div id="modalConfirm" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-        <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl text-center">
-            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🗑</div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2">¿Eliminar registro?</h3>
-            <p class="text-sm text-slate-500 mb-6" id="confirmMsg">Esta acción se marcará como BORRADO en el sistema.</p>
+    <div id="modalConfirm" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-800 w-full max-w-xs rounded-3xl p-6 border border-slate-700 text-center">
+            <div class="w-16 h-16 bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🗑</div>
+            <h3 class="text-lg font-bold text-white mb-2">¿Eliminar registro?</h3>
+            <p class="text-sm text-slate-400 mb-6">Se borrará permanentemente del historial.</p>
             <div class="flex gap-3">
-                <button onclick="cerrarConfirm()" class="flex-1 p-3 text-slate-400 font-bold">No, volver</button>
-                <button id="btnConfirmDelete" class="flex-1 p-3 bg-red-500 text-white font-bold rounded-2xl shadow-lg">Sí, borrar</button>
+                <button onclick="cerrarConfirm()" class="flex-1 p-3 text-slate-500 font-bold">Cancelar</button>
+                <button id="btnConfirmDelete" class="flex-1 p-3 bg-red-600 text-white font-bold rounded-2xl shadow-lg">Sí, borrar</button>
             </div>
         </div>
     </div>
 
-    <div id="modalBasico" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-            <h3 class="text-xl font-bold text-slate-800 mb-4">Nuevo Gasto Básico</h3>
-            <input type="text" id="nuevoNombreBasico" placeholder="Nombre del servicio" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none mb-6">
+    <div id="modalBasico" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-slate-800 w-full max-w-sm rounded-3xl p-6 border border-slate-700 shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-4">Nuevo Gasto Básico</h3>
+            <input type="text" id="nuevoNombreBasico" placeholder="Nombre del servicio" class="w-full p-4 mb-6">
             <div class="flex gap-3">
-                <button onclick="cerrarModalBasico()" class="flex-1 p-4 text-slate-400 font-bold">Cancelar</button>
+                <button onclick="cerrarModalBasico()" class="flex-1 p-4 text-slate-500 font-bold">Cancelar</button>
                 <button onclick="agregarABasicos()" class="flex-1 p-4 bg-blue-600 text-white font-bold rounded-2xl">Agregar</button>
             </div>
         </div>
@@ -80,7 +150,7 @@
         let rastros = JSON.parse(localStorage.getItem('gastos_rastros')) || {};
         let itemABorrar = null;
 
-        const formatCLP = (m) => (!m || isNaN(m) || m == 0) ? "" : "$" + Number(m).toLocaleString('es-CL');
+        const formatCLP = (m) => (!m || isNaN(m) || m == 0) ? "$0" : "$" + Number(m).toLocaleString('es-CL');
         const cleanMonto = (t) => t.toString().replace(/[^0-9]/g, '');
 
         function getFechaHoy() {
@@ -90,14 +160,16 @@
 
         function getEtiquetaMes(f) {
             const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-            if (!f) return "Sin Fecha";
+            if (!f) return "Otros";
             try {
-                if (f.includes('-')) {
-                    const dISO = new Date(f); dISO.setHours(dISO.getHours() + 5); 
-                    return `${meses[dISO.getMonth()]} ${dISO.getFullYear()}`;
+                let fechaLimpia = f.includes('T') ? f.split('T')[0] : f.replace(/'/g, '');
+                if (fechaLimpia.includes('-')) {
+                    const [y, m, d] = fechaLimpia.split('-');
+                    return `${meses[parseInt(m)-1]} ${y}`;
                 }
-                const p = f.split('/');
-                return (p.length === 3) ? `${meses[parseInt(p[1]) - 1]} 20${p[2]}` : "Otros";
+                const p = fechaLimpia.split('/');
+                if(p.length === 3) return `${meses[parseInt(p[1])-1]} 20${p[2]}`;
+                return "Otros";
             } catch (e) { return "Otros"; }
         }
 
@@ -105,19 +177,27 @@
             const contenedor = document.getElementById('plantillaBasicos');
             contenedor.innerHTML = "";
             listaBasicos.forEach((nombre, i) => {
-                const rastro = rastros[nombre] ? `Último: ${rastros[nombre]}` : "Sin pagos";
+                const rastro = rastros[nombre] ? `Último: ${rastros[nombre]}` : "Sin pagos registrados";
                 contenedor.innerHTML += `
                     <div class="card-gasto" id="plantilla-${i}">
-                        <div class="flex justify-between items-center gap-4">
-                            <div class="flex items-center gap-3 flex-1">
-                                <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-bold">${nombre[0]}</div>
-                                <div><h4 class="font-bold text-slate-800">${nombre}</h4><p class="last-check">${rastro}</p></div>
+                        <div class="flex items-center justify-between gap-3 mb-2">
+                            <div class="flex items-center gap-3">
+                                <div class="icon-box">${nombre[0]}</div>
+                                <h4 class="font-bold text-sm tracking-tight">${nombre}</h4>
                             </div>
                             <div class="flex items-center gap-2">
-                                <input type="text" id="monto-p-${i}" placeholder="$0" onfocus="this.type='number';this.value=''" onblur="this.type='text';this.value=formatCLP(this.value)" class="w-20 p-2 text-right border rounded-lg outline-none text-sm font-medium bg-slate-50/50">
+                                <input type="text" id="monto-p-${i}" placeholder="$0" 
+                                    onfocus="this.type='number';this.value=''" 
+                                    onblur="this.type='text';this.value=formatCLP(this.value)" 
+                                    class="w-20 p-2 text-right text-sm font-bold">
                                 <span onclick="procesarPago(${i}, '${nombre}')" class="badge-pendiente">PAGAR</span>
-                                <button onclick="pedirConfirmacion('basico', ${i})" class="btn-delete text-lg">×</button>
+                                <button onclick="pedirConfirmacion('basico', ${i})" class="btn-delete ml-1">×</button>
                             </div>
+                        </div>
+                        <div class="mt-1 pl-1">
+                            <p class="text-[10px] font-medium text-slate-500 italic bg-slate-900/40 px-2 py-1 rounded-md border border-slate-700/50 inline-block">
+                                ${rastro}
+                            </p>
                         </div>
                     </div>`;
             });
@@ -127,21 +207,34 @@
             const lista = document.getElementById('listaHistorial');
             lista.innerHTML = "";
             const grupos = {};
+            
             historial.filter(g => g.estado !== "BORRADO").forEach(g => {
                 const mes = getEtiquetaMes(g.fecha);
-                if (!grupos[mes]) grupos[mes] = [];
-                grupos[mes].push(g);
+                if (!grupos[mes]) grupos[mes] = { items: [], total: 0 };
+                grupos[mes].items.push(g);
+                grupos[mes].total += parseInt(cleanMonto(g.monto)) || 0;
             });
 
+            // Mostramos los meses cerrados por defecto quitando el atributo 'open'
             Object.keys(grupos).reverse().forEach(mes => {
-                let html = `<details class="mb-4"><summary class="flex justify-between items-center bg-slate-100 p-3 rounded-xl border border-slate-200"><span class="text-xs font-bold text-slate-500 uppercase">${mes}</span><div class="icon-caret"></div></summary><div class="mt-3 space-y-2">`;
-                grupos[mes].forEach(g => {
+                let html = `<details class="mb-4">
+                    <summary class="flex justify-between items-center shadow-md">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-400 uppercase">${mes}</span>
+                            <span class="badge-total-mes">${formatCLP(grupos[mes].total)}</span>
+                        </div>
+                        <div class="icon-caret"></div>
+                    </summary>
+                    <div class="mt-3 space-y-2 px-1">`;
+                
+                grupos[mes].items.forEach(g => {
+                    const fDisplay = g.fecha.includes('T') ? g.fecha.split('T')[0] : g.fecha.replace(/'/g, '');
                     html += `
-                        <div class="flex justify-between items-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm relative">
-                            <div class="text-sm"><p class="font-bold text-slate-800">${g.servicio}</p><p class="text-[10px] text-slate-400">${g.fecha.replace(/'/g, '')}</p></div>
+                        <div class="flex justify-between items-center p-4 bg-slate-800/40 rounded-2xl border border-slate-700 shadow-sm relative" id="historial-card-${g.id}">
+                            <div class="text-sm"><p class="font-bold text-slate-200">${g.servicio}</p><p class="text-[10px] text-slate-500">${fDisplay}</p></div>
                             <div class="flex items-center gap-3 text-right">
-                                <div><p class="text-sm font-black text-slate-800">${formatCLP(g.monto)}</p><p class="text-[9px] text-green-500 font-bold">PAGADO</p></div>
-                                <button onclick="pedirConfirmacion('historial', '${g.id}')" class="btn-delete text-xl ml-2">×</button>
+                                <div><p class="text-sm font-black text-white">${formatCLP(g.monto)}</p><p class="text-[9px] text-green-500 font-bold uppercase">Pagado</p></div>
+                                <button onclick="pedirConfirmacion('historial', '${g.id}')" class="btn-delete ml-2">×</button>
                             </div>
                         </div>`;
                 });
@@ -149,33 +242,38 @@
             });
         }
 
-        // LÓGICA DE ELIMINACIÓN
         function pedirConfirmacion(tipo, id) {
             itemABorrar = { tipo, id };
             document.getElementById('modalConfirm').style.display = 'flex';
             document.getElementById('btnConfirmDelete').onclick = ejecutarEliminacion;
         }
 
-        function cerrarConfirm() { document.getElementById('modalConfirm').style.display = 'none'; itemABorrar = null; }
+        function cerrarConfirm() { document.getElementById('modalConfirm').style.display = 'none'; }
 
         async function ejecutarEliminacion() {
             const { tipo, id } = itemABorrar;
+            cerrarConfirm();
             if (tipo === 'basico') {
                 listaBasicos.splice(id, 1);
                 localStorage.setItem('config_basicos', JSON.stringify(listaBasicos));
                 renderPlantilla();
             } else {
+                const card = document.getElementById(`historial-card-${id}`);
+                const overlay = document.createElement('div');
+                overlay.className = 'loading-overlay';
+                overlay.innerHTML = `<div class="spinner"></div>`;
+                if(card) card.appendChild(overlay);
+
                 const index = historial.findIndex(g => g.id == id);
                 if (index !== -1) {
-                    historial[index].estado = "BORRADO"; // Borrado lógico para el Excel
-                    localStorage.setItem('gastos_historial', JSON.stringify(historial));
+                    historial[index].estado = "BORRADO"; 
                     try {
                         await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(historial[index]) });
-                    } catch(e) { console.error("Error al reportar borrado"); }
-                    renderHistorial();
+                        localStorage.setItem('gastos_historial', JSON.stringify(historial));
+                        renderHistorial();
+                    } catch(e) { alert("Error"); overlay.remove(); }
                 }
             }
-            cerrarConfirm();
         }
 
         async function procesarPago(idx, nombre) {
@@ -184,15 +282,13 @@
             if (!monto || monto == 0) return alert("Ingresa un monto");
 
             const card = document.getElementById(`plantilla-${idx}`);
-            card.classList.add('syncing');
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = `<div class="spinner"></div>`;
+            card.appendChild(overlay);
 
             const nuevoRegistro = {
-                id: Date.now(),
-                servicio: nombre,
-                desc: "Pago mensual",
-                monto: monto,
-                estado: "PAGADO",
-                fecha: "'" + getFechaHoy()
+                id: Date.now(), servicio: nombre, desc: "Pago mensual", monto: monto, estado: "PAGADO", fecha: "'" + getFechaHoy()
             };
 
             try {
@@ -203,8 +299,7 @@
                 localStorage.setItem('gastos_historial', JSON.stringify(historial));
                 renderPlantilla();
                 renderHistorial();
-            } catch (e) { alert("Error al conectar"); }
-            finally { card.classList.remove('syncing'); }
+            } catch (e) { alert("Error"); overlay.remove(); }
         }
 
         function abrirModalBasico() { document.getElementById('modalBasico').style.display = 'flex'; }
@@ -214,8 +309,7 @@
             if (nombre) {
                 listaBasicos.push(nombre);
                 localStorage.setItem('config_basicos', JSON.stringify(listaBasicos));
-                renderPlantilla();
-                cerrarModalBasico();
+                renderPlantilla(); cerrarModalBasico();
             }
         }
 
@@ -229,9 +323,7 @@
             } finally { btn.innerText = "Sincronizar ↻"; }
         }
 
-        renderPlantilla();
-        renderHistorial();
-        cargarDesdeNube();
+        renderPlantilla(); renderHistorial(); cargarDesdeNube();
     </script>
 </body>
 </html>
