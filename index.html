@@ -93,22 +93,38 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #modalBasico, #modalConfirm { display: none; }
+        #modalBasico, #modalConfirm, #modalTransporte { display: none; }
+        #modalBasico { align-items: flex-start; padding-top: 10%; }
+        @media (max-width: 600px) {
+            #modalBasico .bg-slate-800 { margin-top: 20px; max-height: 80vh; overflow-y: auto; }
+        }
     </style>
 </head>
 <body class="p-4 pb-24">
 
     <div class="mb-8">
-        <details>
-            <summary class="flex justify-between items-center shadow-lg">
-                <span class="text-white font-bold tracking-wide uppercase text-sm">Gastos Básicos</span>
-                <div class="icon-caret"></div>
-            </summary>
-            <div id="plantillaBasicos" class="mt-4"></div>
-            <button onclick="abrirModalBasico()" class="btn-add">
-                + Añadir nuevo servicio
-            </button>
-        </details>
+        <div class="flex justify-center gap-8 mb-6 py-2">
+            <button onclick="toggleCategoria('casa')" class="text-[2rem] transition-transform active:scale-90" title="Servicios del hogar">🏠</button>
+            <button onclick="toggleCategoria('gato')" class="text-[2rem] transition-transform active:scale-90" title="Mascotas">🐱</button>
+            <button onclick="toggleCategoria('bucle')" class="text-[2rem] transition-transform active:scale-90" title="Suscripciones">🔁</button>
+            <button onclick="toggleCategoria('carrito')" class="text-[2rem] transition-transform active:scale-90" title="Gastos variables">🛒</button>
+            <button onclick="abrirModalTransporte()" class="text-[2rem] transition-transform active:scale-90" title="Transporte">🚌</button>
+        </div>
+        <div class="flex justify-center gap-4 mb-8">
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Vale</p>
+                <input type="text" id="sueldoYo" placeholder="$0" class="w-28 p-2 text-center text-sm font-bold" 
+                    onfocus="this.type='number';this.value=cleanMonto(this.value)" 
+                    onblur="this.type='text';this.value=formatCLP(this.value);guardarSueldos()">
+            </div>
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Manu</p>
+                <input type="text" id="sueldoPareja" placeholder="$0" class="w-28 p-2 text-center text-sm font-bold" 
+                    onfocus="this.type='number';this.value=cleanMonto(this.value)" 
+                    onblur="this.type='text';this.value=formatCLP(this.value);guardarSueldos()">
+            </div>
+        </div>
+        <div id="contenedorCategorias" class="hidden"></div>
     </div>
 
     <hr class="border-slate-800 mb-8">
@@ -134,21 +150,63 @@
     <div id="modalBasico" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
         <div class="bg-slate-800 w-full max-w-sm rounded-3xl p-6 border border-slate-700 shadow-2xl">
             <h3 class="text-xl font-bold text-white mb-4">Nuevo Gasto Básico</h3>
-            <input type="text" id="nuevoNombreBasico" placeholder="Nombre del servicio" class="w-full p-4 mb-6">
+            <input type="text" id="nuevoNombreBasico" placeholder="Nombre del servicio" class="w-full p-4 mb-6" onkeypress="if(event.key === 'Enter') agregarACategoria()" autocomplete="off" onfocus="desplazarModalArriba()" onblur="restaurarModal()">
             <div class="flex gap-3">
                 <button onclick="cerrarModalBasico()" class="flex-1 p-4 text-slate-500 font-bold">Cancelar</button>
-                <button onclick="agregarABasicos()" class="flex-1 p-4 bg-blue-600 text-white font-bold rounded-2xl">Agregar</button>
+                <button onclick="agregarACategoria()" class="flex-1 p-4 bg-blue-600 text-white font-bold rounded-2xl">Agregar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL TRANSPORTE -->
+    <div id="modalTransporte" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-slate-800 w-full max-w-sm rounded-3xl p-6 border border-slate-700 shadow-2xl relative">
+            <h3 class="text-xl font-bold text-white mb-6 text-center">🚌 Registro de Micro</h3>
+            
+            <div class="space-y-6">
+                <!-- Sección Normal -->
+                <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Tarifa Normal</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="registrarTransporte('Normal', 'Local', 500)" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold">Local<br>$500</button>
+                        <button onclick="registrarTransporte('Normal', 'Medio', 900)" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold">Normal<br>$900</button>
+                        <button onclick="registrarTransporte('Normal', 'Directo', 1500)" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold">Directo<br>$1.500</button>
+                    </div>
+                </div>
+
+                <!-- Sección Escolar -->
+                <div>
+                    <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-3">Tarifa Escolar</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="registrarTransporte('Escolar', 'Local', 200)" class="bg-blue-900/30 border border-blue-800 p-3 rounded-xl text-xs font-bold">Local<br>$200</button>
+                        <button onclick="registrarTransporte('Escolar', 'Medio', 300)" class="bg-blue-900/30 border border-blue-800 p-3 rounded-xl text-xs font-bold">Normal<br>$300</button>
+                        <button onclick="registrarTransporte('Escolar', 'Directo', 500)" class="bg-blue-900/30 border border-blue-800 p-3 rounded-xl text-xs font-bold">Directo<br>$500</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="cerrarModalTransporte()" class="w-full mt-8 p-4 text-slate-500 font-bold">Cerrar</button>
         </div>
     </div>
 
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkXuLYmYdvnCiEIFdwvBcU8y7riBbG6Rn4nxEVGMf6L1hnwW02xT4y23AKOOH0xYzPLQ/exec"; 
         
-        let listaBasicos = JSON.parse(localStorage.getItem('config_basicos')) || ["Esval", "Gasco", "Chilquinta", "Wom Manu", "Wom Vale", "Wom Fibra", "GG.CC."];
+        let serviciosPorCategoria = JSON.parse(localStorage.getItem('config_basicos_v2')) || {
+            casa: ["Esval", "Gasco", "Chilquinta", "GG.CC.", "Wom Fibra"],
+            gato: ["Arena Gatos", "Comida Gatos"],
+            bucle: ["Gym", "Wom Manu", "Wom Vale"],
+            carrito: ["Supermercado", "Awa", "Salida a comer", "Libros", "Carnicería", "Liquimax", "Farmacia", "Salud", "Tiendas", "MercadoLibre", "Feria"]
+        };
+
+        const PRECIOS_TRANSPORTE = {
+            normal: { local: 500, medio: 900, directo: 1500 },
+            escolar: { local: 200, medio: 300, directo: 500 }
+        };
+
         let historial = JSON.parse(localStorage.getItem('gastos_historial')) || [];
-        let rastros = JSON.parse(localStorage.getItem('gastos_rastros')) || {};
         let itemABorrar = null;
+        let categoriaActiva = null;
 
         const formatCLP = (m) => (!m || isNaN(m) || m == 0) ? "$0" : "$" + Number(m).toLocaleString('es-CL');
         const cleanMonto = (t) => t.toString().replace(/[^0-9]/g, '');
@@ -173,25 +231,54 @@
             } catch (e) { return "Otros"; }
         }
 
-        function renderPlantilla() {
-            const contenedor = document.getElementById('plantillaBasicos');
+        function obtenerUltimoPago(servicioNombre) {
+            const pagos = historial
+                .filter(g => g.servicio === servicioNombre && g.estado !== "BORRADO")
+                .sort((a, b) => b.id - a.id);
+            
+            if (pagos.length > 0) {
+                const ultimo = pagos[0];
+                const fDisplay = ultimo.fecha.includes('T') ? ultimo.fecha.split('T')[0] : ultimo.fecha.replace(/'/g, '');
+                return `${formatCLP(ultimo.monto)} el ${fDisplay}`;
+            }
+            return null;
+        }
+
+        function toggleCategoria(catId) {
+            const contenedor = document.getElementById('contenedorCategorias');
+            if (categoriaActiva === catId) {
+                contenedor.classList.add('hidden');
+                categoriaActiva = null;
+            } else {
+                categoriaActiva = catId;
+                renderCategoria(catId);
+                contenedor.classList.remove('hidden');
+            }
+        }
+
+        function renderCategoria(catId) {
+            const contenedor = document.getElementById('contenedorCategorias');
             contenedor.innerHTML = "";
-            listaBasicos.forEach((nombre, i) => {
-                const rastro = rastros[nombre] ? `Último: ${rastros[nombre]}` : "Sin pagos registrados";
+            
+            const servicios = serviciosPorCategoria[catId] || [];
+            
+            servicios.forEach((nombre, i) => {
+                const ultimo = obtenerUltimoPago(nombre);
+                const rastro = ultimo ? `Último: ${ultimo}` : "Sin pagos registrados";
                 contenedor.innerHTML += `
-                    <div class="card-gasto" id="plantilla-${i}">
+                    <div class="card-gasto" id="plantilla-${catId}-${i}">
                         <div class="flex items-center justify-between gap-3 mb-2">
                             <div class="flex items-center gap-3">
                                 <div class="icon-box">${nombre[0]}</div>
                                 <h4 class="font-bold text-sm tracking-tight">${nombre}</h4>
                             </div>
                             <div class="flex items-center gap-2">
-                                <input type="text" id="monto-p-${i}" placeholder="$0" 
+                                <input type="text" id="monto-p-${catId}-${i}" placeholder="$0" 
                                     onfocus="this.type='number';this.value=''" 
                                     onblur="this.type='text';this.value=formatCLP(this.value)" 
                                     class="w-20 p-2 text-right text-sm font-bold">
-                                <span onclick="procesarPago(${i}, '${nombre}')" class="badge-pendiente">PAGAR</span>
-                                <button onclick="pedirConfirmacion('basico', ${i})" class="btn-delete ml-1">×</button>
+                                <span onclick="procesarPago(${i}, '${nombre}', '${catId}')" class="badge-pendiente">PAGAR</span>
+                                <button onclick="pedirConfirmacion('basico', {idx: ${i}, cat: '${catId}'})" class="btn-delete ml-1">×</button>
                             </div>
                         </div>
                         <div class="mt-1 pl-1">
@@ -201,6 +288,10 @@
                         </div>
                     </div>`;
             });
+            contenedor.innerHTML += `
+                <button onclick="abrirModalBasico()" class="btn-add">
+                    + Añadir nuevo servicio a esta lista
+                </button>`;
         }
 
         function renderHistorial() {
@@ -208,15 +299,16 @@
             lista.innerHTML = "";
             const grupos = {};
             
-            historial.filter(g => g.estado !== "BORRADO").forEach(g => {
+            // Ordenamos una copia del historial por ID (timestamp) de mayor a menor
+            [...historial].sort((a, b) => b.id - a.id).filter(g => g.estado !== "BORRADO").forEach(g => {
                 const mes = getEtiquetaMes(g.fecha);
                 if (!grupos[mes]) grupos[mes] = { items: [], total: 0 };
                 grupos[mes].items.push(g);
                 grupos[mes].total += parseInt(cleanMonto(g.monto)) || 0;
             });
 
-            // Mostramos los meses cerrados por defecto quitando el atributo 'open'
-            Object.keys(grupos).reverse().forEach(mes => {
+            // Al estar el historial ya ordenado, los meses se procesan del más reciente al más antiguo
+            Object.keys(grupos).forEach(mes => {
                 let html = `<details class="mb-4">
                     <summary class="flex justify-between items-center shadow-md">
                         <div class="flex items-center gap-2">
@@ -254,9 +346,9 @@
             const { tipo, id } = itemABorrar;
             cerrarConfirm();
             if (tipo === 'basico') {
-                listaBasicos.splice(id, 1);
-                localStorage.setItem('config_basicos', JSON.stringify(listaBasicos));
-                renderPlantilla();
+                serviciosPorCategoria[id.cat].splice(id.idx, 1);
+                localStorage.setItem('config_basicos_v2', JSON.stringify(serviciosPorCategoria));
+                renderCategoria(id.cat);
             } else {
                 const card = document.getElementById(`historial-card-${id}`);
                 const overlay = document.createElement('div');
@@ -276,12 +368,12 @@
             }
         }
 
-        async function procesarPago(idx, nombre) {
-            const montoInput = document.getElementById(`monto-p-${idx}`);
+        async function procesarPago(idx, nombre, catId) {
+            const montoInput = document.getElementById(`monto-p-${catId}-${idx}`);
             const monto = cleanMonto(montoInput.value);
             if (!monto || monto == 0) return alert("Ingresa un monto");
 
-            const card = document.getElementById(`plantilla-${idx}`);
+            const card = document.getElementById(`plantilla-${catId}-${idx}`);
             const overlay = document.createElement('div');
             overlay.className = 'loading-overlay';
             overlay.innerHTML = `<div class="spinner"></div>`;
@@ -293,24 +385,70 @@
 
             try {
                 await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(nuevoRegistro) });
-                rastros[nombre] = `${formatCLP(monto)} el ${getFechaHoy()}`;
-                localStorage.setItem('gastos_rastros', JSON.stringify(rastros));
                 historial.unshift(nuevoRegistro);
                 localStorage.setItem('gastos_historial', JSON.stringify(historial));
-                renderPlantilla();
+                renderCategoria(catId);
                 renderHistorial();
             } catch (e) { alert("Error"); overlay.remove(); }
         }
 
-        function abrirModalBasico() { document.getElementById('modalBasico').style.display = 'flex'; }
+        // FUNCIONES TRANSPORTE
+        function abrirModalTransporte() { document.getElementById('modalTransporte').style.display = 'flex'; }
+        function cerrarModalTransporte() { document.getElementById('modalTransporte').style.display = 'none'; }
+
+        async function registrarTransporte(tipo, subcat, monto) {
+            const nombre = `Bus ${tipo} (${subcat})`;
+            const modalContent = document.querySelector('#modalTransporte .bg-slate-800');
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = `<div class="spinner"></div>`;
+            modalContent.appendChild(overlay);
+
+            const nuevoRegistro = {
+                id: Date.now(), 
+                servicio: nombre, 
+                desc: "Pasaje transporte", 
+                monto: monto.toString(), 
+                estado: "PAGADO", 
+                fecha: "'" + getFechaHoy()
+            };
+
+            try {
+                await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(nuevoRegistro) });
+                historial.unshift(nuevoRegistro);
+                localStorage.setItem('gastos_historial', JSON.stringify(historial));
+                renderHistorial();
+                cerrarModalTransporte();
+                overlay.remove();
+            } catch (e) { alert("Error al registrar"); overlay.remove(); }
+        }
+
+        function abrirModalBasico() { 
+            document.getElementById('modalBasico').style.display = 'flex'; 
+            document.getElementById('nuevoNombreBasico').value = "";
+            document.getElementById('nuevoNombreBasico').blur();
+        }
         function cerrarModalBasico() { document.getElementById('modalBasico').style.display = 'none'; }
-        function agregarABasicos() {
+        
+        function agregarACategoria() {
             const nombre = document.getElementById('nuevoNombreBasico').value.trim();
-            if (nombre) {
-                listaBasicos.push(nombre);
-                localStorage.setItem('config_basicos', JSON.stringify(listaBasicos));
-                renderPlantilla(); cerrarModalBasico();
+            if (nombre && categoriaActiva) {
+                serviciosPorCategoria[categoriaActiva].push(nombre);
+                localStorage.setItem('config_basicos_v2', JSON.stringify(serviciosPorCategoria));
+                renderCategoria(categoriaActiva); cerrarModalBasico();
+                document.getElementById('nuevoNombreBasico').value = "";
             }
+        }
+
+        function desplazarModalArriba() {
+            const modalContent = document.querySelector('#modalBasico .bg-slate-800');
+            if (modalContent) modalContent.style.marginTop = '40px';
+        }
+
+        function restaurarModal() {
+            const modalContent = document.querySelector('#modalBasico .bg-slate-800');
+            if (modalContent) modalContent.style.marginTop = '';
         }
 
         async function cargarDesdeNube() {
@@ -323,7 +461,15 @@
             } finally { btn.innerText = "Sincronizar ↻"; }
         }
 
-        renderPlantilla(); renderHistorial(); cargarDesdeNube();
+        function guardarSueldos() {
+            localStorage.setItem('sueldo_yo', cleanMonto(document.getElementById('sueldoYo').value));
+            localStorage.setItem('sueldo_pareja', cleanMonto(document.getElementById('sueldoPareja').value));
+        }
+
+        document.getElementById('sueldoYo').value = formatCLP(localStorage.getItem('sueldo_yo') || "");
+        document.getElementById('sueldoPareja').value = formatCLP(localStorage.getItem('sueldo_pareja') || "");
+
+        renderHistorial(); cargarDesdeNube();
     </script>
 </body>
 </html>
