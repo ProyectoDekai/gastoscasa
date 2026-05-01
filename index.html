@@ -93,10 +93,10 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #modalBasico, #modalConfirm, #modalTransporte, #modalLogin { display: none; }
-        #modalBasico { align-items: flex-start; padding-top: 10%; }
+        #modalBasico, #modalConfirm, #modalTransporte, #modalIngreso { display: none; }
+        #modalBasico, #modalIngreso { align-items: flex-start; padding-top: 30%; }
         @media (max-width: 600px) {
-            #modalBasico .bg-slate-800 { margin-top: 20px; max-height: 80vh; overflow-y: auto; }
+            #modalBasico .bg-slate-800, #modalIngreso .bg-slate-800 { transition: transform 0.3s ease; margin-top: 20px; max-height: 80vh; overflow-y: auto; }
         }
     </style>
 </head>
@@ -110,18 +110,19 @@
             <button onclick="toggleCategoria('carrito')" class="text-[2rem] transition-transform active:scale-90" title="Gastos variables">🛒</button>
             <button onclick="abrirModalTransporte()" class="text-[2rem] transition-transform active:scale-90" title="Transporte">🚌</button>
         </div>
+        <div class="flex justify-center h-4 -mt-4 mb-2">
+            <span id="sueldoSyncStatus" class="text-[9px] text-blue-400 font-bold uppercase opacity-0 transition-opacity duration-300">Actualizando nube...</span>
+        </div>
         <div class="flex justify-center gap-4 mb-8">
-            <div class="text-center cursor-pointer" onclick="abrirModalLogin()">
-                <p id="labelVale" class="text-[10px] font-bold text-slate-500 uppercase mb-1 transition-all">Vale</p>
-                <input type="text" id="sueldoYo" placeholder="$0" class="w-28 p-2 text-center text-sm font-bold" 
-                    onfocus="this.type='number';this.value=cleanMonto(this.value)" 
-                    onblur="this.type='text';this.value=formatCLP(this.value);guardarSueldos()">
-            </div>
-            <div class="text-center cursor-pointer" onclick="abrirModalLogin()">
-                <p id="labelManu" class="text-[10px] font-bold text-slate-500 uppercase mb-1 transition-all">Manu</p>
-                <input type="text" id="sueldoPareja" placeholder="$0" class="w-28 p-2 text-center text-sm font-bold" 
-                    onfocus="this.type='number';this.value=cleanMonto(this.value)" 
-                    onblur="this.type='text';this.value=formatCLP(this.value);guardarSueldos()">
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Sueldo Total</p>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="sueldoTotal" placeholder="$0" class="w-40 p-2 text-center text-sm font-bold" inputmode="numeric" pattern="[0-9]*"
+                        onclick="this.select()"
+                        onkeyup="formatInputWithDots(this)"
+                        onblur="this.value=formatCLP(cleanMonto(this.value));guardarSueldoTotal()">
+                    <button onclick="abrirModalIngreso()" class="w-10 h-10 rounded-full bg-green-600/20 text-green-500 border border-green-500/50 font-bold text-xl flex items-center justify-center active:scale-90 transition-transform">+</button>
+                </div>
             </div>
         </div>
         <div id="contenedorCategorias" class="hidden"></div>
@@ -168,9 +169,9 @@
                 <div>
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Tarifa Normal</p>
                     <div class="grid grid-cols-3 gap-2">
-                        <button onclick="registrarTransporte('Normal', 'Local', 500)" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold">Local<br>$500</button>
-                        <button onclick="registrarTransporte('Normal', 'Medio', 900)" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold">Normal<br>$900</button>
-                        <button onclick="registrarTransporte('Normal', 'Directo', 1500)" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold">Directo<br>$1.500</button>
+                        <button onclick="registrarTransporte('Normal', 'Local', 390)" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold">Local<br>$390</button>
+                        <button onclick="registrarTransporte('Normal', 'Medio', 450)" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold">Normal<br>$450</button>
+                        <button onclick="registrarTransporte('Normal', 'Directo', 830)" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold">Directo<br>$830</button>
                     </div>
                 </div>
 
@@ -178,9 +179,9 @@
                 <div>
                     <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-3">Tarifa Escolar</p>
                     <div class="grid grid-cols-3 gap-2">
-                        <button onclick="registrarTransporte('Escolar', 'Local', 200)" class="bg-blue-900/30 border border-blue-800 p-3 rounded-xl text-xs font-bold">Local<br>$200</button>
-                        <button onclick="registrarTransporte('Escolar', 'Medio', 300)" class="bg-blue-900/30 border border-blue-800 p-3 rounded-xl text-xs font-bold">Normal<br>$300</button>
-                        <button onclick="registrarTransporte('Escolar', 'Directo', 500)" class="bg-blue-900/30 border border-blue-800 p-3 rounded-xl text-xs font-bold">Directo<br>$500</button>
+                        <button onclick="registrarTransporte('Escolar', 'Local', 120)" class="bg-blue-900/30 border border-blue-800 p-3 rounded-xl text-xs font-bold">Local<br>$120</button>
+                        <button onclick="registrarTransporte('Escolar', 'Medio', 160)" class="bg-blue-900/30 border border-blue-800 p-3 rounded-xl text-xs font-bold">Normal<br>$160</button>
+                        <button onclick="registrarTransporte('Escolar', 'Directo', 280)" class="bg-blue-900/30 border border-blue-800 p-3 rounded-xl text-xs font-bold">Directo<br>$280</button>
                     </div>
                 </div>
             </div>
@@ -189,15 +190,15 @@
         </div>
     </div>
 
-    <!-- MODAL INICIO / LOGIN -->
-    <div id="modalLogin" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950 backdrop-blur-md">
-        <div class="bg-slate-800 w-full max-w-xs rounded-3xl p-8 border border-slate-700 text-center shadow-2xl">
-            <h3 class="text-xl font-bold text-white mb-8">¿Quién está usando la App?</h3>
-            <div class="grid grid-cols-1 gap-4">
-                <button onclick="seleccionarUsuario('Vale')" class="p-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl text-lg transition-transform active:scale-95">Vale 👩‍🦰</button>
-                <button onclick="seleccionarUsuario('Manu')" class="p-4 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-2xl text-lg transition-transform active:scale-95">Manu 👨‍🦱</button>
+    <!-- MODAL AGREGAR INGRESO -->
+    <div id="modalIngreso" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-slate-800 w-full max-w-sm rounded-3xl p-6 border border-slate-700 shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-4">Agregar ingreso</h3>
+            <input type="text" id="montoIngreso" placeholder="Monto a sumar" class="w-full p-4 mb-6" inputmode="numeric" pattern="[0-9]*" onkeyup="formatInputWithDots(this)" onkeypress="if(event.key === 'Enter') sumarIngreso()" onfocus="desplazarModalArriba()" onblur="restaurarModal()">
+            <div class="flex gap-3">
+                <button onclick="cerrarModalIngreso()" class="flex-1 p-4 text-slate-500 font-bold">Cancelar</button>
+                <button onclick="sumarIngreso()" class="flex-1 p-4 bg-green-600 text-white font-bold rounded-2xl">Sumar</button>
             </div>
-            <p class="text-slate-500 text-[10px] mt-6 uppercase tracking-widest font-bold">Proyecto Cuentas Hogar</p>
         </div>
     </div>
 
@@ -212,8 +213,8 @@
         };
 
         const PRECIOS_TRANSPORTE = {
-            normal: { local: 500, medio: 900, directo: 1500 },
-            escolar: { local: 200, medio: 300, directo: 500 }
+            normal: { local: 390, medio: 450, directo: 830 },
+            escolar: { local: 120, medio: 160, directo: 280 }
         };
 
         let historial = JSON.parse(localStorage.getItem('gastos_historial')) || [];
@@ -222,31 +223,6 @@
 
         const formatCLP = (m) => (!m || isNaN(m) || m == 0) ? "$0" : "$" + Number(m).toLocaleString('es-CL');
         const cleanMonto = (t) => t.toString().replace(/[^0-9]/g, '');
-
-        function abrirModalLogin() { document.getElementById('modalLogin').style.display = 'flex'; }
-        
-        function seleccionarUsuario(nombre) {
-            localStorage.setItem('usuario_activo', nombre);
-            document.getElementById('modalLogin').style.display = 'none';
-            actualizarUIUsuario();
-        }
-
-        function actualizarUIUsuario() {
-            const user = localStorage.getItem('usuario_activo');
-            const lVale = document.getElementById('labelVale');
-            const lManu = document.getElementById('labelManu');
-            
-            lVale.className = "text-[10px] font-bold text-slate-500 uppercase mb-1 transition-all";
-            lManu.className = "text-[10px] font-bold text-slate-500 uppercase mb-1 transition-all";
-            
-            if(user === 'Vale') {
-                lVale.classList.replace('text-slate-500', 'text-blue-400');
-                lVale.classList.add('scale-110');
-            } else if(user === 'Manu') {
-                lManu.classList.replace('text-slate-500', 'text-orange-400');
-                lManu.classList.add('scale-110');
-            }
-        }
 
         function getFechaHoy() {
             const hoy = new Date();
@@ -386,6 +362,7 @@
                 serviciosPorCategoria[id.cat].splice(id.idx, 1);
                 localStorage.setItem('config_basicos_v2', JSON.stringify(serviciosPorCategoria));
                 renderCategoria(id.cat);
+                sincronizarConfiguracion();
             } else {
                 const card = document.getElementById(`historial-card-${id}`);
                 const overlay = document.createElement('div');
@@ -406,12 +383,11 @@
         }
 
         function descontarDeSaldo(monto) {
-            const user = localStorage.getItem('usuario_activo');
-            const inputId = (user === 'Vale') ? 'sueldoYo' : 'sueldoPareja';
-            const sueldoActual = parseInt(cleanMonto(document.getElementById(inputId).value)) || 0;
+            const input = document.getElementById('sueldoTotal');
+            const sueldoActual = parseInt(cleanMonto(input.value)) || 0;
             const nuevoSueldo = sueldoActual - monto;
-            document.getElementById(inputId).value = formatCLP(nuevoSueldo);
-            guardarSueldos();
+            input.value = formatCLP(nuevoSueldo);
+            guardarSueldoTotal();
         }
 
         async function procesarPago(idx, nombre, catId) {
@@ -472,6 +448,27 @@
             } catch (e) { alert("Error al registrar"); overlay.remove(); }
         }
 
+        // FUNCIONES INGRESO EXTRA
+        function abrirModalIngreso() {
+            document.getElementById('modalIngreso').style.display = 'flex';
+            document.getElementById('montoIngreso').value = "";
+            document.getElementById('montoIngreso').focus();
+        }
+        function cerrarModalIngreso() { document.getElementById('modalIngreso').style.display = 'none'; }
+        function sumarIngreso() {
+            const montoExtra = parseInt(cleanMonto(document.getElementById('montoIngreso').value)) || 0;
+            if (montoExtra > 0) {
+                const inputSueldo = document.getElementById('sueldoTotal');
+                const sueldoActual = parseInt(cleanMonto(inputSueldo.value)) || 0;
+                const nuevoSueldo = sueldoActual + montoExtra;
+                inputSueldo.value = formatCLP(nuevoSueldo);
+                guardarSueldoTotal();
+                cerrarModalIngreso();
+            } else {
+                cerrarModalIngreso();
+            }
+        }
+
         function abrirModalBasico() { 
             document.getElementById('modalBasico').style.display = 'flex'; 
             document.getElementById('nuevoNombreBasico').value = "";
@@ -486,22 +483,36 @@
                 localStorage.setItem('config_basicos_v2', JSON.stringify(serviciosPorCategoria));
                 renderCategoria(categoriaActiva); cerrarModalBasico();
                 document.getElementById('nuevoNombreBasico').value = "";
+                sincronizarConfiguracion();
             }
         }
 
         function desplazarModalArriba() {
-            const modalContent = document.querySelector('#modalBasico .bg-slate-800');
-            if (modalContent) modalContent.style.marginTop = '40px';
+            const activeModal = Array.from(document.querySelectorAll('.fixed')).find(m => m.style.display === 'flex');
+            const modalContent = activeModal ? activeModal.querySelector('.bg-slate-800') : null;
+            if (modalContent && window.innerWidth < 600) {
+                modalContent.style.transform = 'translateY(-80px)';
+            }
         }
 
         function restaurarModal() {
-            const modalContent = document.querySelector('#modalBasico .bg-slate-800');
-            if (modalContent) modalContent.style.marginTop = '';
+            document.querySelectorAll('.bg-slate-800').forEach(c => c.style.transform = '');
+        }
+
+        async function sincronizarConfiguracion() {
+            try {
+                await fetch(WEB_APP_URL, { 
+                    method: 'POST', mode: 'no-cors', 
+                    body: JSON.stringify({ tipo: "config", id: "servicios_config", data: serviciosPorCategoria }) 
+                });
+            } catch (e) {}
         }
 
         async function cargarDesdeNube() {
             const btn = document.getElementById('btnSync');
+            const sStatus = document.getElementById('sueldoSyncStatus');
             btn.innerText = "Sincronizando...";
+            if(sStatus) sStatus.classList.remove('opacity-0');
             try {
                 const response = await fetch(WEB_APP_URL);
                 const data = await response.json();
@@ -510,30 +521,54 @@
                     localStorage.setItem('gastos_historial', JSON.stringify(historial)); 
                     renderHistorial(); 
                 }
-                if (data && data.sueldos) {
-                    localStorage.setItem('sueldo_yo', data.sueldos.Vale);
-                    localStorage.setItem('sueldo_pareja', data.sueldos.Manu);
-                    document.getElementById('sueldoYo').value = formatCLP(data.sueldos.Vale);
-                    document.getElementById('sueldoPareja').value = formatCLP(data.sueldos.Manu);
+                if (data && data.sueldoTotal !== undefined) {
+                    localStorage.setItem('sueldo_total', data.sueldoTotal);
+                    document.getElementById('sueldoTotal').value = formatCLP(data.sueldoTotal);
                 }
-            } finally { btn.innerText = "Sincronizar ↻"; }
+                if (data && data.config) {
+                    serviciosPorCategoria = data.config;
+                    localStorage.setItem('config_basicos_v2', JSON.stringify(serviciosPorCategoria));
+                    if (categoriaActiva) renderCategoria(categoriaActiva);
+                } else if (data && data.config === null) {
+                    sincronizarConfiguracion();
+                }
+            } finally { 
+                btn.innerText = "Sincronizar ↻"; 
+                if(sStatus) setTimeout(() => sStatus.classList.add('opacity-0'), 1000);
+            }
         }
 
-        function guardarSueldos() {
-            const valYo = cleanMonto(document.getElementById('sueldoYo').value);
-            const valPa = cleanMonto(document.getElementById('sueldoPareja').value);
+        function guardarSueldoTotal() {
+            const val = cleanMonto(document.getElementById('sueldoTotal').value);
+            const sStatus = document.getElementById('sueldoSyncStatus');
             
-            localStorage.setItem('sueldo_yo', valYo);
-            localStorage.setItem('sueldo_pareja', valPa);
+            localStorage.setItem('sueldo_total', val);
+
+            if(sStatus) sStatus.classList.remove('opacity-0');
 
             // Sincronizar sueldos con la nube
-            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ id: "sueldo_vale", monto: valYo }) });
-            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ id: "sueldo_manu", monto: valPa }) });
+            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ id: "sueldo_total", monto: val }) })
+            .finally(() => {
+                if(sStatus) setTimeout(() => sStatus.classList.add('opacity-0'), 1000);
+            });
+        }
+
+        // Nueva función para formatear números con puntos al escribir
+        function formatInputWithDots(inputElement) {
+            let value = inputElement.value.replace(/[^0-9]/g, ''); // Eliminar caracteres no numéricos
+            if (value === '') {
+                inputElement.value = '';
+                return;
+            }
+            inputElement.value = parseInt(value, 10).toLocaleString('es-CL'); // Formatear con puntos
         }
 
         renderHistorial(); 
         cargarDesdeNube();
-        if (!localStorage.getItem('usuario_activo')) abrirModalLogin(); else actualizarUIUsuario();
+        document.getElementById('sueldoTotal').value = formatCLP(localStorage.getItem('sueldo_total') || "");
+        localStorage.removeItem('sueldo_yo');
+        localStorage.removeItem('sueldo_pareja');
+        localStorage.removeItem('usuario_activo');
     </script>
 </body>
 </html>
